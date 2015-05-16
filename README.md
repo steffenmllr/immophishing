@@ -4,8 +4,9 @@ CLI Tool that crawls immonet.de and immobilienscout24.de, gets the descriptions 
 
 Usage
 
-`npm i steffenmllr/immophishing -g`
-`immophishing`
+`git clone git@github.com:steffenmllr/immophishing.git`
+`npm install`
+`bin/immo`
 
 Select immonet.de, immobilienscout24.de is not implemented.
 
