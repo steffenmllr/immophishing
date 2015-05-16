@@ -1,0 +1,94 @@
+#!/usr/bin/env node
+
+var inquirer = require('inquirer');
+var chalk = require('chalk');
+var immoph = require('./../lib');
+var Promise = require('bluebird');
+var _ = require('lodash');
+
+function metaInfo(text) {
+    console.log(chalk.white(
+        chalk.blue.underline.bold('Objektbeschreibung:') +
+        chalk.white(' %s Zeichen')
+    ), (text.objektbeschreibung||'').split(' ').length || 0);
+//    console.log(chalk.white(text.objektbeschreibung ||''));
+
+    console.log(chalk.white(
+        chalk.blue.underline.bold('Lagebeschreibung:') +
+        chalk.white(' %s Zeichen')
+    ), (text.lagebeschreibung||'').split(' ').length || 0);
+  //  console.log(chalk.white(text.lagebeschreibung ||''));
+
+    console.log(chalk.white(
+        chalk.blue.underline.bold('Sonstiges:') +
+        chalk.white(' %s Zeichen')
+    ), (text.sonstiges||'').split(' ').length || 0);
+ //   console.log(chalk.white(text.sonstiges ||''));
+}
+
+inquirer.prompt([{
+    type: "list",
+    name: "who",
+    message: "Ist das ganze von immobilienscout24 oder von immonet ?",
+    choices: [
+      "immonet.de",
+      "immobilienscout24.de"
+    ]
+  },{
+    type: "input",
+    name: "id",
+    message: "Was ist die ID der Anzeige ?"
+  }], function( answers ) {
+    if(!answers.id || answers.id === '' || !parseInt(answers.id, 10)) {
+        console.log(chalk.red.bold(answers.id + ' ist leider keine gültige Nummer'));
+        process.exit()
+    } else {
+        console.log(chalk.red('########## Crawle ' + answers.who + ' - dies kann etwas dauern'));
+        var InfoQuery;
+        if(answers.who === 'immonet.de') {
+            InfoQuery = immoph.getImmoNetInfo(answers.id);
+        } else {
+            console.log(chalk.red('Someone needs to write a scraper for immoscout'));
+            process.exit();
+        }
+
+        InfoQuery.then(function(result) {
+            console.log(chalk.blue.bold('Immobilie erkannt: %s!'), result.headline);
+            console.log(chalk.white.underline.bold(result.url));
+            console.log(chalk.blue('%s Bilder gefunden!'), result.imageUrls.length);
+            metaInfo(result.text);
+
+            if(result.imageUrls.length === 0) {
+                console.log(chalk.white.bold('Leider konnten keine Bilder gefunden werden'));
+                console.log(chalk.white('----------'));
+            } else {
+                console.log(chalk.white('Überprüfe die ersten 3 Bilder falls vorhanden'));
+                var images = result.imageUrls.slice(0, 3);
+                var qimage = images.map(function(image) {
+                    return immoph.getImageInfo(image).then(function(res) {
+                        if(res.count > 5) {
+                            console.log(chalk.red('ANZEIGE WAHRSCHEINLICH FAKE: ', chalk.underline(res.count) + ' gleiche Bilder gefunden für: ' + image));
+                        }
+                        return res;
+                    });
+                });
+
+                Promise.all(qimage).then(function(results) {
+                    var cnt = _.reduce(results, function(total, item) {
+                        return total + item.count;
+                    }, 0);
+                    console.log('GLEICHE BILDER GEFUNDEN: ' + chalk.red(chalk.underline(cnt)) + ' - bei ' + images.length + ' Bildern');
+                    if(Math.ceil(cnt / images.length) > 2) {
+                        console.log(chalk.red('ANZEIGE IST FAKE :) '));
+                    } else {
+                        console.log(chalk.green('ANZEIGE OK!'));
+                    }
+                    process.exit();
+                });
+            }
+        });
+
+    }
+
+    // Use user feedback for... whatever!!
+});

@@ -1,0 +1,19 @@
+{
+  "name": "immophishing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Steffen Müller",
+  "bin":{
+    "immophishing": "bin/immophishing"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^2.9.25",
+    "chalk": "^1.0.0",
+    "inquirer": "^0.8.4",
+    "lodash": "^3.8.0",
+    "nightmare": "^1.8.1",
+    "phantomjs": "^1.9.16"
+  }
+}
