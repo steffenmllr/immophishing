@@ -4,11 +4,15 @@ CLI Tool that crawls immonet.de and immobilienscout24.de, gets the descriptions 
 
 Usage
 
-`git clone git@github.com:steffenmllr/immophishing.git`
-`npm install`
-`bin/immo`
+```
+git clone git@github.com:steffenmllr/immophishing.git
+cd immophishing
+npm install
+bin/immo
+```
 
-Select immonet.de, immobilienscout24.de is not implemented.
+
+Select immonet.de, immobilienscout24.de is not implemented (immobilienscout24 does not like crawling).
 
 Follow the instructions.
 ![Result Fake](result_fake.png)
